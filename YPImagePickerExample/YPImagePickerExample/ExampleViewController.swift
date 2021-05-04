@@ -86,7 +86,9 @@ class ExampleViewController: UIViewController {
         // config.usesFrontCamera = true
 
         /* Adds a Filter step in the photo taking process. Defaults to true */
-        // config.showsFilters = false
+         config.showsPhotoFilters = false
+
+
 
         /* Manage filters by yourself */
         // config.filters = [YPFilter(name: "Mono", coreImageFilterName: "CIPhotoEffectMono"),
@@ -128,7 +130,7 @@ class ExampleViewController: UIViewController {
         config.video.libraryTimeLimit = 500.0
 
         /* Adds a Crop step in the photo taking process, after filters. Defaults to .none */
-        config.showsCrop = .rectangle(ratio: (16/9))
+        config.showsCrop = .none //.rectangle(ratio: (16/9))
 
         /* Defines the overlay view for the camera. Defaults to UIView(). */
         // let overlayView = UIView()
@@ -145,7 +147,7 @@ class ExampleViewController: UIViewController {
         /* Defines if the bottom bar should be hidden when showing the picker. Default is false */
         config.hidesBottomBar = false
 
-        config.maxCameraZoomFactor = 2.0
+//        config.maxCameraZoomFactor = 2.0
 
         config.library.maxNumberOfItems = 5
         config.gallery.hidesRemoveButton = false
@@ -162,19 +164,21 @@ class ExampleViewController: UIViewController {
            let picker = YPImagePicker() and the configuration will be the same as the first picker. */
 
         /* Only show library pictures from the last 3 days */
-        //let threDaysTimeInterval: TimeInterval = 3 * 60 * 60 * 24
-        //let fromDate = Date().addingTimeInterval(-threDaysTimeInterval)
-        //let toDate = Date()
-        //let options = PHFetchOptions()
-        // options.predicate = NSPredicate(format: "creationDate > %@ && creationDate < %@", fromDate as CVarArg, toDate as CVarArg)
+        let threDaysTimeInterval: TimeInterval = 3 * 60 * 60 * 24
+        let fromDate = Date().addingTimeInterval(-threDaysTimeInterval)
+        let toDate = Date()
+        let options = PHFetchOptions()
+//         options.predicate = NSPredicate(format: "creationDate > %@ && creationDate < %@", fromDate as CVarArg, toDate as CVarArg)
+        options.predicate = NSPredicate(format: "mediaType = %d", PHAssetMediaType.image.rawValue)
         //
         ////Just a way to set order
-        //let sortDescriptor = NSSortDescriptor(key: "creationDate", ascending: true)
-        //options.sortDescriptors = [sortDescriptor]
+        let sortDescriptor = NSSortDescriptor(key: "creationDate", ascending: false)
+        options.sortDescriptors = [sortDescriptor]
         //
-        //config.library.options = options
+        config.library.options = options
 
         config.library.preselectedItems = selectedItems
+        config.library.skipSelectionsGallery = true
 
 
 		// Customise fonts
@@ -205,7 +209,19 @@ class ExampleViewController: UIViewController {
             if let firstItem = items.first {
                 switch firstItem {
                 case .photo(let photo):
-                    self.selectedImageV.image = photo.image
+                    if let asset = photo.asset {
+                        DispatchQueue.main.async {
+                            let options = PHImageRequestOptions()
+                            options.deliveryMode = .highQualityFormat
+                            options.resizeMode = .exact
+//                            options.isNetworkAccessAllowed = true
+                            PHCachingImageManager().requestImage(for: asset, targetSize: CGSize(width: self.view.frame.width * UIScreen.main.scale, height: self.view.frame.width * UIScreen.main.scale * CGFloat((asset.pixelHeight / asset.pixelWidth))), contentMode: .aspectFill, options: options) { img, exists in
+                                self.selectedImageV.image = img
+                            }
+                        }
+                    }
+//                    self.selectedImageV.image = UIImage(data: photo.data!)
+                    print(photo.data)
                     picker.dismiss(animated: true, completion: nil)
                 case .video(let video):
                     self.selectedImageV.image = video.thumbnail

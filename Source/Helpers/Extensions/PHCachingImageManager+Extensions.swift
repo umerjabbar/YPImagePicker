@@ -23,25 +23,42 @@ extension PHCachingImageManager {
     func fetchImage(for asset: PHAsset,
 					cropRect: CGRect,
 					targetSize: CGSize,
-					callback: @escaping (UIImage, [String: Any]) -> Void) {
+					callback: @escaping (UIImage, [String: Any], Data?) -> Void) {
         let options = photoImageRequestOptions()
     
         // Fetch Highiest quality image possible.
         requestImageData(for: asset, options: options) { data, _, _, _ in
-            if let data = data, let image = UIImage(data: data)?.resetOrientation() {
-            
-                // Crop the high quality image manually.
-                let xCrop: CGFloat = cropRect.origin.x * CGFloat(asset.pixelWidth)
-                let yCrop: CGFloat = cropRect.origin.y * CGFloat(asset.pixelHeight)
-                let scaledCropRect = CGRect(x: xCrop,
-                                            y: yCrop,
-                                            width: targetSize.width,
-                                            height: targetSize.height)
-                if let imageRef = image.cgImage?.cropping(to: scaledCropRect) {
-                    let croppedImage = UIImage(cgImage: imageRef)
-                    let exifs = self.metadataForImageData(data: data)
-                    callback(croppedImage, exifs)
-                }
+//            if let data = data, let image = UIImage(data: data)?.resetOrientation() {
+//
+//                // Crop the high quality image manually.
+//                let xCrop: CGFloat = cropRect.origin.x * CGFloat(asset.pixelWidth)
+//                let yCrop: CGFloat = cropRect.origin.y * CGFloat(asset.pixelHeight)
+//                let scaledCropRect = CGRect(x: xCrop,
+//                                            y: yCrop,
+//                                            width: targetSize.width,
+//                                            height: targetSize.height)
+//                if let imageRef = image.cgImage?.cropping(to: scaledCropRect) {
+//                    let croppedImage = UIImage(cgImage: imageRef)
+//                    let exifs = self.metadataForImageData(data: data)
+//                    callback(croppedImage, exifs)
+//                }
+//            }
+
+            if let data = data {
+                let exifs = self.metadataForImageData(data: data)
+                callback(UIImage(), exifs, data)
+//                let options = PHImageRequestOptions()
+//                options.isNetworkAccessAllowed = true
+//                options.deliveryMode = .highQualityFormat
+//                self.requestImage(for: asset, targetSize: CGSize(width: 500, height: 500), // PHImageManagerMaximumSize,
+//                             contentMode: .aspectFill, options: options) { result, info in
+//                    DispatchQueue.main.async {
+//                        if let img = result {
+//                            let exifs = self.metadataForImageData(data: data)
+//                            callback(img, exifs)
+//                        }
+//                    }
+//                }
             }
         }
     }
@@ -89,9 +106,10 @@ extension PHCachingImageManager {
         let options = PHImageRequestOptions()
 		// Enables gettings iCloud photos over the network, this means PHImageResultIsInCloudKey will never be true.
         options.isNetworkAccessAllowed = true
+        options.resizeMode = .fast
 		// Get 2 results, one low res quickly and the high res one later.
         options.deliveryMode = .opportunistic
-        requestImage(for: asset, targetSize: PHImageManagerMaximumSize,
+        requestImage(for: asset, targetSize: CGSize(width: 500, height: 500), // PHImageManagerMaximumSize,
 					 contentMode: .aspectFill, options: options) { result, info in
             guard let image = result else {
                 print("No Result 🛑")
