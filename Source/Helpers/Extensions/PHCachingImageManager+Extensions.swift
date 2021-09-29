@@ -112,7 +112,7 @@ extension PHCachingImageManager {
         requestImage(for: asset, targetSize: CGSize(width: 500, height: 500), // PHImageManagerMaximumSize,
 					 contentMode: .aspectFill, options: options) { result, info in
             guard let image = result else {
-                print("No Result 🛑")
+                ypLog("No Result 🛑")
                 return
             }
             DispatchQueue.main.async {
