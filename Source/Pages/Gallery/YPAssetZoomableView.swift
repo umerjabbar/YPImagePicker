@@ -102,6 +102,7 @@ final class YPAssetZoomableView: UIScrollView {
                          completion: @escaping (Bool) -> Void,
                          updateCropInfo: @escaping () -> Void) {
         guard currentAsset != photo else {
+            self.photoImageView.image = nil
             DispatchQueue.main.async { completion(false) }
             return
         }

@@ -61,6 +61,8 @@ extension YPLibraryVC: PHPhotoLibraryChangeObserver {
            selectedItems.isEmpty {
             let newAsset = self.mediaManager.fetchResult[0]
             self.changeAsset(newAsset)
+        } else {
+            self.v.assetZoomableView.clearAsset()
         }
 
         // If user decided to forbid all photos with limited permission
